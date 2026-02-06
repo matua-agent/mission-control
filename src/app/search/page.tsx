@@ -8,15 +8,25 @@ import { Button } from "@/components/ui/button";
 
 type SearchRecord = {
   id: string;
-  type: "memory" | "document" | "conversation";
+  type: "memory" | "document" | "task" | "conversation";
   title: string;
   content: string;
+  path: string;
+  snippet: string;
 };
 
 const typeLabels: Record<SearchRecord["type"], string> = {
   memory: "Memory Files",
   document: "Documents",
-  conversation: "Past Conversations",
+  task: "Tasks",
+  conversation: "Conversations",
+};
+
+const typeColors: Record<SearchRecord["type"], string> = {
+  memory: "bg-purple-500/20 text-purple-200",
+  document: "bg-blue-500/20 text-blue-200",
+  task: "bg-amber-500/20 text-amber-200",
+  conversation: "bg-emerald-500/20 text-emerald-200",
 };
 
 export default function SearchPage() {
@@ -32,7 +42,7 @@ export default function SearchPage() {
   }, [query]);
 
   useEffect(() => {
-    if (!debouncedQuery) {
+    if (!debouncedQuery || debouncedQuery.length < 2) {
       setResults([]);
       return;
     }
@@ -81,34 +91,37 @@ export default function SearchPage() {
         <CardHeader>
           <CardTitle>Global Search</CardTitle>
           <CardDescription>
-            Search across memory files, documents, and past conversations.
+            Search across memory files, documents, tasks, and past conversations in the workspace.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search logs, memory, and transcripts..."
+            placeholder="Search for anything... (min 2 characters)"
           />
           {loading && (
             <div className="rounded-3xl border border-dashed border-slate-800 p-6 text-sm text-slate-400">
-              Searching...
+              Searching workspace...
             </div>
           )}
-          {!loading && debouncedQuery && results.length === 0 && (
+          {!loading && debouncedQuery.length >= 2 && results.length === 0 && (
             <div className="rounded-3xl border border-dashed border-slate-800 p-6 text-sm text-slate-400">
-              No results for "{debouncedQuery}".
+              No results for &quot;{debouncedQuery}&quot;.
             </div>
           )}
           {!loading && results.length > 0 && (
             <div className="space-y-6">
+              <div className="text-sm text-slate-400">
+                Found {results.length} results for &quot;{debouncedQuery}&quot;
+              </div>
               {Object.entries(grouped).map(([type, items]) => (
                 <div key={type} className="space-y-3">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-slate-100">
                       {typeLabels[type as SearchRecord["type"]]}
                     </h3>
-                    <Badge className="bg-slate-800 text-slate-200">
+                    <Badge className={typeColors[type as SearchRecord["type"]]}>
                       {items.length}
                     </Badge>
                   </div>
@@ -118,13 +131,16 @@ export default function SearchPage() {
                         key={item.id}
                         className="rounded-3xl border border-slate-800 bg-slate-950/60 p-4"
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-100">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-slate-100 truncate">
                               {item.title}
                             </p>
-                            <p className="text-xs text-slate-400">
-                              {item.content.slice(0, 90)}...
+                            <p className="text-xs text-slate-500 font-mono truncate">
+                              {item.path}
+                            </p>
+                            <p className="mt-2 text-sm text-slate-300">
+                              {item.snippet}
                             </p>
                           </div>
                           <Button
@@ -136,9 +152,9 @@ export default function SearchPage() {
                           </Button>
                         </div>
                         {expanded[item.id] && (
-                          <p className="mt-3 text-sm text-slate-300">
+                          <pre className="mt-4 p-4 rounded-2xl bg-slate-900 text-xs text-slate-300 overflow-x-auto whitespace-pre-wrap">
                             {item.content}
-                          </p>
+                          </pre>
                         )}
                       </div>
                     ))}
