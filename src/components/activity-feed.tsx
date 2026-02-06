@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,8 @@ const actionTypes = [
 ];
 
 type Activity = {
-  id: string;
+  _id?: string;
+  id?: string;
   timestamp: number;
   type: string;
   description: string;
@@ -98,7 +99,7 @@ function ActivityList({ activities }: { activities: Activity[] }) {
     <div className="space-y-4">
       {activities.map((activity) => (
         <div
-          key={activity.id}
+          key={activity._id || activity.id}
           className="flex flex-col gap-3 rounded-3xl border border-slate-800 bg-slate-950/60 p-5 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="space-y-2">
@@ -119,7 +120,47 @@ function ActivityList({ activities }: { activities: Activity[] }) {
 
 export function ActivityFeed() {
   const [typeFilter, setTypeFilter] = useState("all");
-  const [activities] = useState<Activity[]>(fallbackActivities);
+  const [activities, setActivities] = useState<Activity[]>(fallbackActivities);
+  const [isConvexConnected, setIsConvexConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+
+  useEffect(() => {
+    if (!convexUrl) {
+      setLoading(false);
+      return;
+    }
+
+    // Try to fetch from Convex
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch(`${convexUrl}/api/query`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            path: "activities:list",
+            args: { type: typeFilter === "all" ? undefined : typeFilter },
+          }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data.value)) {
+            setActivities(data.value);
+            setIsConvexConnected(true);
+          }
+        }
+      } catch {
+        // Fall back to demo data
+        setIsConvexConnected(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, [convexUrl, typeFilter]);
 
   const filtered = activities.filter(
     (activity) => typeFilter === "all" || activity.type === typeFilter
@@ -131,12 +172,15 @@ export function ActivityFeed() {
         <CardTitle>Activity Feed</CardTitle>
         <CardDescription>
           Chronological log of actions and task completions.
+          {!isConvexConnected && convexUrl && (
+            <span className="ml-2 text-amber-400">(Demo mode — Convex schema pending)</span>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-slate-400">
-            Showing {filtered.length} activities • newest first
+            {loading ? "Loading..." : `Showing ${filtered.length} activities • newest first`}
           </div>
           <div className="w-full sm:w-56">
             <Select value={typeFilter} onChange={setTypeFilter}>
@@ -148,7 +192,7 @@ export function ActivityFeed() {
             </Select>
           </div>
         </div>
-        {filtered.length === 0 ? <EmptyState /> : <ActivityList activities={filtered} />}
+        {!loading && filtered.length === 0 ? <EmptyState /> : <ActivityList activities={filtered} />}
       </CardContent>
     </Card>
   );
