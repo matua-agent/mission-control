@@ -1,28 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-type SearchRecord = {
-  id: string;
-  type: "memory" | "document" | "task" | "conversation";
+type SearchResult = {
+  _id: string;
+  path: string;
+  type: string;
   title: string;
   content: string;
-  path: string;
   snippet: string;
 };
 
-const typeLabels: Record<SearchRecord["type"], string> = {
+const typeLabels: Record<string, string> = {
   memory: "Memory Files",
   document: "Documents",
   task: "Tasks",
   conversation: "Conversations",
 };
 
-const typeColors: Record<SearchRecord["type"], string> = {
+const typeColors: Record<string, string> = {
   memory: "bg-purple-500/20 text-purple-200",
   document: "bg-blue-500/20 text-blue-200",
   task: "bg-amber-500/20 text-amber-200",
@@ -31,50 +33,20 @@ const typeColors: Record<SearchRecord["type"], string> = {
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [results, setResults] = useState<SearchRecord[]>([]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(query), 350);
-    return () => clearTimeout(timer);
-  }, [query]);
+  // Only search when query is 2+ chars
+  const searchQuery = query.length >= 2 ? query : "";
+  const results = useQuery(
+    api.searchIndex.search,
+    searchQuery ? { query: searchQuery } : "skip"
+  );
 
-  useEffect(() => {
-    if (!debouncedQuery || debouncedQuery.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    let active = true;
-    setLoading(true);
-
-    fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`)
-      .then((response) => response.json())
-      .then((data: SearchRecord[]) => {
-        if (active) {
-          setResults(data);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setResults([]);
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [debouncedQuery]);
+  const isLoading = searchQuery && results === undefined;
 
   const grouped = useMemo(() => {
-    return results.reduce<Record<string, SearchRecord[]>>((acc, record) => {
+    if (!results) return {};
+    return results.reduce<Record<string, SearchResult[]>>((acc, record) => {
       acc[record.type] = acc[record.type] ?? [];
       acc[record.type].push(record);
       return acc;
@@ -91,7 +63,7 @@ export default function SearchPage() {
         <CardHeader>
           <CardTitle>Global Search</CardTitle>
           <CardDescription>
-            Search across memory files, documents, tasks, and past conversations in the workspace.
+            Search across memory files, documents, and conversations in the workspace.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -100,35 +72,38 @@ export default function SearchPage() {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search for anything... (min 2 characters)"
           />
-          {loading && (
+
+          {isLoading && (
             <div className="rounded-3xl border border-dashed border-slate-800 p-6 text-sm text-slate-400">
-              Searching workspace...
+              Searching...
             </div>
           )}
-          {!loading && debouncedQuery.length >= 2 && results.length === 0 && (
+
+          {!isLoading && searchQuery && results?.length === 0 && (
             <div className="rounded-3xl border border-dashed border-slate-800 p-6 text-sm text-slate-400">
-              No results for &quot;{debouncedQuery}&quot;.
+              No results for &quot;{searchQuery}&quot;. Try syncing the search index from VPS.
             </div>
           )}
-          {!loading && results.length > 0 && (
+
+          {!isLoading && results && results.length > 0 && (
             <div className="space-y-6">
               <div className="text-sm text-slate-400">
-                Found {results.length} results for &quot;{debouncedQuery}&quot;
+                Found {results.length} results for &quot;{searchQuery}&quot;
               </div>
               {Object.entries(grouped).map(([type, items]) => (
                 <div key={type} className="space-y-3">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-slate-100">
-                      {typeLabels[type as SearchRecord["type"]]}
+                      {typeLabels[type] || type}
                     </h3>
-                    <Badge className={typeColors[type as SearchRecord["type"]]}>
+                    <Badge className={typeColors[type] || "bg-slate-800 text-slate-200"}>
                       {items.length}
                     </Badge>
                   </div>
                   <div className="space-y-3">
                     {items.map((item) => (
                       <div
-                        key={item.id}
+                        key={item._id}
                         className="rounded-3xl border border-slate-800 bg-slate-950/60 p-4"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -146,13 +121,13 @@ export default function SearchPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => toggleExpanded(item.id)}
+                            onClick={() => toggleExpanded(item._id)}
                           >
-                            {expanded[item.id] ? "Collapse" : "Expand"}
+                            {expanded[item._id] ? "Collapse" : "Expand"}
                           </Button>
                         </div>
-                        {expanded[item.id] && (
-                          <pre className="mt-4 p-4 rounded-2xl bg-slate-900 text-xs text-slate-300 overflow-x-auto whitespace-pre-wrap">
+                        {expanded[item._id] && (
+                          <pre className="mt-4 p-4 rounded-2xl bg-slate-900 text-xs text-slate-300 overflow-x-auto whitespace-pre-wrap max-h-96 overflow-y-auto">
                             {item.content}
                           </pre>
                         )}
@@ -161,6 +136,12 @@ export default function SearchPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {!searchQuery && (
+            <div className="rounded-3xl border border-dashed border-slate-800 p-6 text-sm text-slate-400">
+              Enter a search term to find content across your workspace.
             </div>
           )}
         </CardContent>
