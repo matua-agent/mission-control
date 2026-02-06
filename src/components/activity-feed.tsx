@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectItem } from "@/components/ui/select";
@@ -49,15 +48,10 @@ function TypeBadge({ type }: { type: string }) {
   return <Badge className="bg-slate-800 text-slate-200">{type}</Badge>;
 }
 
-function EmptyState({ onSeed }: { onSeed?: () => void }) {
+function EmptyState() {
   return (
     <div className="rounded-3xl border border-dashed border-slate-800 p-6 text-center">
-      <p className="text-sm text-slate-400 mb-4">No activity yet. Seed some demo data?</p>
-      {onSeed && (
-        <Button variant="outline" size="sm" onClick={onSeed}>
-          Add sample activities
-        </Button>
-      )}
+      <p className="text-sm text-slate-400">No activity yet. Actions will appear here as Matua works.</p>
     </div>
   );
 }
@@ -92,12 +86,6 @@ export function ActivityFeed() {
   const activities = useQuery(api.activities.list, {
     type: typeFilter === "all" ? undefined : typeFilter,
   });
-  
-  const seedMutation = useMutation(api.activities.seed);
-
-  const handleSeed = async () => {
-    await seedMutation({});
-  };
 
   const isLoading = activities === undefined;
 
@@ -106,7 +94,7 @@ export function ActivityFeed() {
       <CardHeader>
         <CardTitle>Activity Feed</CardTitle>
         <CardDescription>
-          Chronological log of actions and task completions.
+          Live log of Matua&apos;s actions and task completions.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -125,7 +113,7 @@ export function ActivityFeed() {
           </div>
         </div>
         {!isLoading && (!activities || activities.length === 0) ? (
-          <EmptyState onSeed={handleSeed} />
+          <EmptyState />
         ) : (
           <ActivityList activities={activities || []} />
         )}
