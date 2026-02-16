@@ -12,6 +12,7 @@ import type * as activities from "../activities.js";
 import type * as cronJobs from "../cronJobs.js";
 import type * as http from "../http.js";
 import type * as searchIndex from "../searchIndex.js";
+import type * as stats from "../stats.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   cronJobs: typeof cronJobs;
   http: typeof http;
   searchIndex: typeof searchIndex;
+  stats: typeof stats;
 }>;
 
 /**
