@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 
 const navItems = [
   { href: "/", label: "Activity" },
+  { href: "/repos", label: "Repos" },
   { href: "/calendar", label: "Calendar" },
   { href: "/search", label: "Search" },
 ];
