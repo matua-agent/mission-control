@@ -19,6 +19,7 @@ const TRACKED_REPOS = [
   { owner: "matua-agent", repo: "job-tracker", label: "JobTracker" },
   { owner: "matua-agent", repo: "rep-sensor", label: "Rep Sensor" },
   { owner: "matua-agent", repo: "collab-whiteboard", label: "Collab Whiteboard" },
+  { owner: "matua-agent", repo: "interview-prep", label: "Interview Prep AI" },
 ];
 
 interface RepoData {
