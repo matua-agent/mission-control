@@ -1,0 +1,66 @@
+import { NextResponse } from "next/server";
+
+const apps = [
+  { name: "Athlete IQ", url: "https://athlete-iq-seven.vercel.app" },
+  { name: "Doc IQ", url: "https://doc-iq-one.vercel.app" },
+  { name: "Pipeline Demo", url: "https://pipeline-demo-beta.vercel.app" },
+  { name: "RAG Demo", url: "https://rag-demo-nine.vercel.app" },
+  { name: "Code Reviewer", url: "https://code-reviewer-beta-six.vercel.app" },
+  { name: "Contract Analyzer", url: "https://contract-analyzer-five.vercel.app" },
+  { name: "Tool Use Demo", url: "https://tool-use-demo.vercel.app" },
+  { name: "MCP Server Demo", url: "https://mcp-server-demo-nu.vercel.app" },
+  { name: "Model Faceoff", url: "https://model-faceoff.vercel.app" },
+  { name: "Company Intel", url: "https://company-intel-sigma.vercel.app" },
+  { name: "Research Analyzer", url: "https://research-analyzer-three.vercel.app" },
+  { name: "Interview Prep", url: "https://interview-prep-kappa-navy.vercel.app" },
+  { name: "Clip Finder", url: "https://clip-finder.vercel.app" },
+  { name: "Job Tracker", url: "https://job-tracker.vercel.app" },
+  { name: "Durability App", url: "https://durability-app-six.vercel.app" },
+  { name: "AI Form Explorer", url: "https://ai-form-explorer.vercel.app" },
+  { name: "Collab Whiteboard", url: "https://collab-whiteboard-nine.vercel.app" },
+  { name: "Rep Sensor", url: "https://rep-sensor.vercel.app" },
+  { name: "Remotion Demo", url: "https://remotion-demo-khaki.vercel.app" },
+];
+
+async function checkApp(app: { name: string; url: string }) {
+  const start = Date.now();
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(app.url, {
+      signal: controller.signal,
+      method: "GET",
+      headers: { "User-Agent": "MissionControl/1.0 HealthCheck" },
+      redirect: "follow",
+    });
+    clearTimeout(timer);
+    const responseTime = Date.now() - start;
+    return {
+      name: app.name,
+      url: app.url,
+      status: res.ok ? "ok" : "error",
+      statusCode: res.status,
+      responseTime,
+      checkedAt: Date.now(),
+    };
+  } catch (err: unknown) {
+    const responseTime = Date.now() - start;
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return {
+      name: app.name,
+      url: app.url,
+      status: "error",
+      statusCode: null,
+      responseTime,
+      error: message.includes("abort") ? "Timeout" : message,
+      checkedAt: Date.now(),
+    };
+  }
+}
+
+export async function GET() {
+  const results = await Promise.all(apps.map(checkApp));
+  return NextResponse.json(results, {
+    headers: { "Cache-Control": "no-store" },
+  });
+}
