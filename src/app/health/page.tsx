@@ -149,7 +149,7 @@ export default function HealthPage() {
       {/* App grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {results.length === 0 && loading
-          ? Array.from({ length: 19 }).map((_, i) => (
+          ? Array.from({ length: 33 }).map((_, i) => (
               <div
                 key={i}
                 className="rounded-3xl border border-slate-800 bg-slate-950/60 p-4 animate-pulse h-24"
