@@ -9,6 +9,10 @@ const apps = [
   { name: "Wellness Monitor", url: "https://wellness-monitor-kappa.vercel.app" },
   { name: "Rep Sensor", url: "https://rep-sensor.vercel.app" },
   { name: "Snow Forecast", url: "https://snow-forecast-ca.vercel.app" },
+  // AI / LLM demos — Prompt Engineering
+  { name: "Prompt Lab", url: "https://prompt-lab-delta.vercel.app" },
+  { name: "AI Eval Lab", url: "https://ai-eval-lab.vercel.app" },
+  { name: "Multi-Agent Demo", url: "https://multi-agent-demo-wheat.vercel.app" },
   // AI / LLM demos
   { name: "Pipeline Demo", url: "https://pipeline-demo-beta.vercel.app" },
   { name: "RAG Demo", url: "https://rag-demo-nine.vercel.app" },
