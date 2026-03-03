@@ -13,6 +13,8 @@ const apps = [
   { name: "Prompt Lab", url: "https://prompt-lab-delta.vercel.app" },
   { name: "AI Eval Lab", url: "https://ai-eval-lab.vercel.app" },
   { name: "Multi-Agent Demo", url: "https://multi-agent-demo-wheat.vercel.app" },
+  { name: "Voice AI Demo", url: "https://voice-ai-demo-one.vercel.app" },
+  { name: "Context Engineering Studio", url: "https://context-engineering-studio.vercel.app" },
   // AI / LLM demos
   { name: "Pipeline Demo", url: "https://pipeline-demo-beta.vercel.app" },
   { name: "RAG Demo", url: "https://rag-demo-nine.vercel.app" },
