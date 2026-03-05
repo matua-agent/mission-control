@@ -15,6 +15,9 @@ const apps = [
   { name: "Multi-Agent Demo", url: "https://multi-agent-demo-wheat.vercel.app" },
   { name: "Voice AI Demo", url: "https://voice-ai-demo-one.vercel.app" },
   { name: "Context Engineering Studio", url: "https://context-engineering-studio.vercel.app" },
+  { name: "Agent Memory Demo", url: "https://agent-memory-demo.vercel.app" },
+  { name: "AI Interview Simulator", url: "https://ai-interview-simulator-woad.vercel.app" },
+  { name: "AI PR Review", url: "https://ai-pr-review-omega.vercel.app" },
   // AI / LLM demos
   { name: "Pipeline Demo", url: "https://pipeline-demo-beta.vercel.app" },
   { name: "RAG Demo", url: "https://rag-demo-nine.vercel.app" },
