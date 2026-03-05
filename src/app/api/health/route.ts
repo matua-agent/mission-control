@@ -18,6 +18,7 @@ const apps = [
   { name: "Agent Memory Demo", url: "https://agent-memory-demo.vercel.app" },
   { name: "AI Interview Simulator", url: "https://ai-interview-simulator-woad.vercel.app" },
   { name: "AI PR Review", url: "https://ai-pr-review-omega.vercel.app" },
+  { name: "GitHub Profile Analyzer", url: "https://github-profile-analyzer-theta.vercel.app" },
   // AI / LLM demos
   { name: "Pipeline Demo", url: "https://pipeline-demo-beta.vercel.app" },
   { name: "RAG Demo", url: "https://rag-demo-nine.vercel.app" },
